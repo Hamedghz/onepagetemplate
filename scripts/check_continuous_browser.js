@@ -26,7 +26,7 @@ async (page) => {
   await page.route('**/api/public-settings.php', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{"downloads":[]}' }));
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.goto('http://127.0.0.1:4174/');
+  await page.goto('http://127.0.0.1:4175/');
   await page.locator('.scene-stage').waitFor();
   await page.mouse.move(600, 700);
   check('all seven panes mounted with no hidden/inert content', await page.locator('.scene').count() === 7 && await page.locator('.scene-frame[inert],.scene-frame[aria-hidden]').count() === 0);
@@ -126,7 +126,7 @@ async (page) => {
   check('reduced motion disables automatic-motion toggle', await page.locator('.motion-button').isDisabled());
 
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.goto('http://127.0.0.1:4174/');
+  await page.goto('http://127.0.0.1:4175/');
   await page.locator('.scene-stage').waitFor();
   await page.mouse.move(600, 700);
   await page.locator('.motion-button').click();

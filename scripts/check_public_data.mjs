@@ -17,5 +17,5 @@ check({ contact: { email: "user@example.com?body=unwanted", phone: "(-------)" }
 check({ contact: { email: "u@example.com\r\nBcc:x@example.com" } }, empty, "CRLF email injection rejected");
 const valid = { file: "example.pdf", titleFa: "رزومه", titleEn: "Résumé" };
 check({ downloads: [valid, { ...valid, file: "../bad.pdf" }, { ...valid, file: "bad%2f.pdf" }, { ...valid, file: "bad.pdf.php" }, { ...valid, titleFa: {} }, { ...valid, file: ".hidden.pdf" }] }, { contact: defaultContact, downloads: [valid] }, "Traversal, encoded separators, extensions and malformed titles rejected");
-check({ contact: { email: "new@example.com", phone: "+989331960933", instagram: "https://www.instagram.com/example/" }, downloads: [{ ...valid, internal: "private" }] }, { contact: { email: "new@example.com", phone: "+989331960933", instagram: "https://www.instagram.com/example/" }, downloads: [valid] }, "Valid public fields accepted; extra properties omitted");
+check({ contact: { email: "new@example.com", phone: "+12025550123", instagram: "https://www.instagram.com/example/" }, downloads: [{ ...valid, internal: "private" }] }, { contact: { email: "new@example.com", phone: "+12025550123", instagram: "https://www.instagram.com/example/" }, downloads: [valid] }, "Valid public fields accepted; extra properties omitted");
 console.log(`${checks} public API boundary checks passed`);

@@ -15,5 +15,7 @@ admin/storage/*.lock
 output/
 CODEX_UI_SKILLS.md
 *.zip
+!releases/onepagetemplate-install.zip
+.protected/
 *.rar
 *.7z

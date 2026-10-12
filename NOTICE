@@ -1,31 +1,19 @@
-License scope and asset notices
-
-Software
---------
-Original software code and technical documentation in this repository are
-offered under the MIT License in LICENSE. Third-party software and dependencies
-remain subject to their respective licenses.
-
-Supplied personal content and branding
--------------------------------------
-The personal name/brand of Hamed Ghasemzadeh, the supplied calligraphy logo
-(public/assets/hamed-calligraphy-logo.png and copies in build output), and the
-personal biography, qualifications, experience and contact content in src/copy.js
-are not offered for independent reuse under the software's MIT License.
-
-Rights in these supplied materials remain with their respective rights holders.
-Their inclusion does not assert that the repository author owns third-party
-artwork or has the right to sublicense it. This notice does not grant trademark,
-endorsement or publicity rights. Obtain permission from the applicable rights
-holder before independently reusing protected personal branding or artwork.
+Software and assets
+===================
+The original software, technical documentation and neutral SVG template logo are
+provided under the MIT License in LICENSE. Profile text and contact details are
+fictional examples. Personal branding artwork is not included in this revision.
+Third-party dependencies retain their respective licenses.
 
 Vazirmatn font
 --------------
 Copyright 2015 The Vazirmatn Project Authors
 https://github.com/rastikerdar/vazirmatn
+The bundled font is licensed under SIL Open Font License 1.1. Preserve the
+complete notice in public/assets/Vazirmatn-OFL.txt when redistributing.
 
-The bundled Vazirmatn font is licensed under the SIL Open Font License, Version
-1.1, not the MIT License. The complete copyright and license notice is preserved
-in public/assets/Vazirmatn-OFL.txt and accompanies the font in installation
-packages as assets/Vazirmatn-OFL.txt. Preserve that notice when redistributing
-the font.
+JavaScript obfuscation
+----------------------
+The build uses javascript-obfuscator (BSD-2-Clause). React, Motion, Vite and other
+third-party dependencies remain subject to their upstream licenses. Obfuscated
+output does not change the license of the original code or its dependencies.

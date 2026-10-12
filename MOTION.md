@@ -37,20 +37,20 @@ npm ci
 node scripts/check_continuous_helpers.mjs
 node scripts/check_public_data.mjs
 npm run build
-npm run preview -- --port 4174 --strictPort
+npm run preview -- --port 4175 --strictPort
 ```
 
 در ترمینال دیگری / In another terminal:
 
 ```sh
-npx --yes --package @playwright/cli playwright-cli -s=hamed-continuous open http://127.0.0.1:4174/
-npx --yes --package @playwright/cli playwright-cli -s=hamed-continuous run-code --filename scripts/check_continuous_browser.js
+npx --yes --package @playwright/cli playwright-cli -s=onepage-continuous open http://127.0.0.1:4175/
+npx --yes --package @playwright/cli playwright-cli -s=onepage-continuous run-code --filename scripts/check_continuous_browser.js
 ```
 
 On Windows PowerShell use `npm.cmd` and `npx.cmd`. The browser checks mock the public settings response with an empty download list. They check continuous wheel input, intermediate rendering, physical active state, keyboard movement, navigation interruption, mouse drag, resize, bilingual direction, mobile restoration, reduced motion, pause/hover and automatic movement stopping at the end. Layout with download data is a separate review. These checks do not test backend or database behavior. Automated line/branch coverage is not measured.
 
 ```sh
-python scripts/package_release.py output/hamedghz-continuous-update.zip --frontend-only
+python scripts/package_release.py output/onepage-continuous-update.zip --frontend-only
 ```
 
 The packager uses a whitelist, rejects links/reparse points and refuses to overwrite an existing ZIP. Its existing full installation mode remains available; that mode preserves the four required `.htaccess` files and includes this motion guide.

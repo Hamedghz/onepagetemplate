@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useTransform } from "motion/react";
-import { copy, defaultContact } from "../copy.js";
+import { copy, defaultContact, siteConfig } from "../copy.js";
 import { safePublicData } from "../publicData.js";
 import { useContinuousScenes, useLiveReducedMotion } from "../useContinuousScenes.js";
 
@@ -46,7 +46,7 @@ function AbstractNetwork() {
   return (
     <div className="network-art" aria-hidden="true">
       <div className="art-arc art-arc-one" /><div className="art-arc art-arc-two" />
-      <div className="art-core"><span>H</span></div>
+      <div className="art-core"><span>{siteConfig.monogram}</span></div>
       <span className="art-node node-one" /><span className="art-node node-two" />
       <span className="art-node node-three" /><span className="art-node node-four" />
       <span className="art-label label-one">DATA</span><span className="art-label label-two">NETWORK</span>
@@ -131,7 +131,7 @@ function App() {
             {index === 0 && <span className="project-view">{t.projects.viewCode}<Icon name="arrow" /></span>}
           </a>)}
         </div>
-        <a className="projects-all-link" href="https://github.com/Hamedghz?tab=repositories" target="_blank" rel="noopener noreferrer">{t.projects.allProjects}<Icon name="arrow" /></a>
+        <a className="projects-all-link" href={siteConfig.projectsUrl} target="_blank" rel="noopener noreferrer">{t.projects.allProjects}<Icon name="arrow" /></a>
       </div>
       <div className="projects-art" aria-hidden="true"><AbstractNetwork /><span>AGENT<br />SYSTEM</span></div>
     </section>,
@@ -163,7 +163,7 @@ function App() {
         <div className="credential-rank"><span>{t.qualification.rank}</span><strong>{formatNumber(3, language)}</strong></div>
         <div className="credential-fields">{t.qualification.fields.map((field, index) => <div key={field}><span>{formatNumber(index + 1, language, true)}</span><strong>{field}</strong></div>)}</div>
         <p className="credential-issuer">{t.qualification.issuer}</p>
-        <a className="credential-link" href="https://sb.irannsr.org/index.php?module=web_directory&amp;wd_id=107358&amp;ctp_id=1087&amp;id=33003" target="_blank" rel="noopener noreferrer">
+        <a className="credential-link" href={siteConfig.qualificationUrl} target="_blank" rel="noopener noreferrer">
           {t.qualification.verificationLink}<span aria-hidden="true">↗</span>
         </a>
       </div>
@@ -193,7 +193,7 @@ function App() {
         <div className="contact-row">
           <a href={`mailto:${encodeURIComponent(contact.email)}`}><Icon name="mail" /><span><small>{t.downloads.email}</small><strong>{contact.email}</strong></span></a>
           <a href={`tel:${contact.phone.replace(/[ ()-]+/g, "")}`}><Icon name="phone" /><span><small>{t.downloads.phone}</small><strong>{displayDigits(contact.phone, language)}</strong></span></a>
-          <a href={contact.instagram || defaultContact.instagram} target="_blank" rel="noopener noreferrer"><Icon name="instagram" /><span><small>{t.downloads.instagram}</small><strong>@ghasemzadeh.hamed</strong></span></a>
+          <a href={contact.instagram || defaultContact.instagram} target="_blank" rel="noopener noreferrer"><Icon name="instagram" /><span><small>{t.downloads.instagram}</small><strong>{t.downloads.instagramLabel}</strong></span></a>
         </div>
       </div>
     </section>,
@@ -207,7 +207,7 @@ function App() {
       <a className="skip-link" href="#scene-stage">{t.controls.skip}</a>
       <header className="site-header">
         <a className="wordmark" href="#profile" onClick={(event) => { event.preventDefault(); go(0); }} aria-label={t.brand}>
-          <img className="brand-mark-image" src="/assets/hamed-calligraphy-logo.png" alt="" width="48" height="48" /><span><strong>{t.brand}</strong><small>{t.role}</small></span>
+          <img className="brand-mark-image" src={siteConfig.logo} alt="" width="48" height="48" /><span><strong>{t.brand}</strong><small>{t.role}</small></span>
         </a>
         <nav className="scene-nav" aria-label={language === "fa" ? "بخش‌های رزومه" : "Résumé sections"}>
           {t.nav.map((label, index) => <button key={sceneIds[index]} className={activeScene === index ? "scene-link active" : "scene-link"} type="button" aria-current={activeScene === index ? "step" : undefined} onClick={() => go(index)}><span>{formatNumber(index + 1, language)}</span>{label}</button>)}
@@ -215,7 +215,7 @@ function App() {
         <div className="header-actions"><button className="language-button" type="button" onClick={changeLanguage} aria-label={t.controls.language}>{language === "fa" ? "EN" : "فا"}</button><button className="motion-button" type="button" onClick={() => setPaused((value) => !value)} disabled={reducedMotion} aria-pressed={paused || reducedMotion}>{reducedMotion ? t.controls.reduced : paused ? t.controls.play : t.controls.pause}</button></div>
       </header>
 
-      <main className={desktop ? "scene-stage desktop-stage" : "scene-stage"} id="scene-stage" ref={stageRef} tabIndex={-1} aria-label={language === "fa" ? "رزومهٔ حامد قاسم‌زاده" : "Hamed Ghasemzadeh résumé"}>
+      <main className={desktop ? "scene-stage desktop-stage" : "scene-stage"} id="scene-stage" ref={stageRef} tabIndex={-1} aria-label={t.brand}>
         {slides.map((slide, index) => <div className={activeScene === index ? "scene-frame active" : "scene-frame"} key={sceneIds[index]} ref={(node) => { sceneRefs.current[index] = node; }}>
           <div className="scene-motion" dir={language === "fa" ? "rtl" : "ltr"}>{slide}</div>
         </div>)}
