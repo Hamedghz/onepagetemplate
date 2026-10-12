@@ -12,13 +12,13 @@ My work covers information technology, networks, software and data analytics. Th
 
 ## امکانات / Features
 
-- در دسکتاپ افقی، بخش‌ها با چرخ موس، کلیدهای جهت و ناوبری سایت از راست به چپ جابه‌جا می‌شوند و صفحه اسکرول عمودی ندارد. در موبایل و نمایشگر عمودی، بخش‌ها زیر هم و قابل اسکرول هستند.
+- در دسکتاپ افقی، بخش‌ها با چرخ موس، کشیدن صفحه، کلیدهای جهت و ناوبری سایت به‌صورت پیوسته از راست به چپ جابه‌جا می‌شوند؛ اسکرول عمودی و قفل شدن روی هر بخش وجود ندارد. در موبایل و نمایشگر عمودی، بخش‌ها زیر هم و قابل اسکرول هستند.
 - نسخهٔ فارسی راست‌چین و با اعداد فارسی است؛ نسخهٔ انگلیسی چپ‌به‌راست و چپ‌چین است. جهت حرکت افقی بخش‌ها در هر دو زبان حفظ می‌شود.
 - گرافیک انتزاعی، لوگوی خوشنویسی، بخش پروژه‌ها با تمرکز بر OMERTAOS و لینک مرجع پروانه در سازمان نصر.
 - حرکت خودکار قابل توقف است و تنظیم کاهش حرکت سیستم‌عامل رعایت می‌شود. با قرار گرفتن اشاره‌گر یا فوکوس در صفحه، یا مخفی شدن تب، حرکت خودکار متوقف می‌شود.
 - نصب‌کنندهٔ یک‌بارهٔ PHP، یک حساب مدیر، تنظیم اطلاعات تماس و انتشار PDF از مسیرهایی مانند `/dl/example.pdf`.
 
-On landscape desktop, the site uses horizontal scene navigation with no page-level vertical scrolling. Mobile and portrait layouts use a normal vertical page. Persian has RTL alignment and Persian digits; English uses LTR alignment. Automatic motion can be paused and respects reduced-motion preferences. The admin dashboard is reached manually at `/admin/`; no public login link is shown.
+On landscape desktop, the site uses continuous horizontal scrolling with no snapping or page-level vertical scrolling. All seven sections remain rendered. Mobile and portrait layouts use a normal vertical page. Persian has RTL alignment and Persian digits; English uses LTR alignment. Automatic motion can be paused and respects reduced-motion preferences. See [MOTION.md](MOTION.md) for interaction, validation and frontend-only update instructions. The admin dashboard is reached manually at `/admin/`; no public login link is shown.
 
 ## ساختار و فناوری / Structure and stack
 
@@ -27,6 +27,7 @@ React and Motion for React power the frontend. Vite produces static HTML, CSS an
 | Path | Purpose |
 |---|---|
 | [`src/resume/App.jsx`](src/resume/App.jsx) | Public page, scenes and navigation |
+| [`src/useContinuousScenes.js`](src/useContinuousScenes.js) | Shared continuous scroll, active section and motion controls |
 | [`src/copy.js`](src/copy.js) | Persian/English résumé content |
 | [`src/styles.css`](src/styles.css) | Layout, theme and responsive styles |
 | [`src/publicData.js`](src/publicData.js) | Validation of public API data in the frontend |
@@ -71,6 +72,14 @@ Edit résumé content in `src/copy.js` and rebuild. The dashboard edits contact 
 npm run build
 python scripts/package_release.py ../hamed-resume-site-install.zip
 ```
+
+برای به‌روزرسانی فقط رابط روی سایت نصب‌شده / To update only the frontend of an installed site:
+
+```sh
+python scripts/package_release.py ../hamed-resume-site-frontend.zip --frontend-only
+```
+
+این ZIP فقط صفحهٔ ساخته‌شده، assets و راهنمای حرکت/مجوزها را دارد. ابتدا assets و سپس `index.html` را منتقل کنید؛ تنظیمات نصب، PHP، `.htaccess` هاست، دیتابیس و دانلودها را حفظ کنید. جزئیات و بازگشت در [MOTION.md](MOTION.md) آمده است.
 
 نام ZIP باید تازه باشد؛ بسته‌ساز فایل موجود را بازنویسی نمی‌کند. بسته فقط فایل‌های لازم برای استقرار را انتخاب می‌کند و فایل‌های مخفی `.htaccess` را حفظ می‌کند. رمز دیتابیس، پیکربندی واقعی نصب، قفل‌ها، فایل‌های PDF موجود، دادهٔ زمان اجرا، `node_modules` و کد منبع در ZIP نصب منتشر نمی‌شوند. ZIP منبع GitHub را روی هاست استخراج نکنید.
 

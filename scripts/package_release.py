@@ -5,20 +5,26 @@ import sys
 
 site = Path(__file__).resolve().parents[1]
 dist = site / "dist"
-out = Path(sys.argv[1]).expanduser().resolve() if len(sys.argv) > 1 else site.parent / "hamed-resume-site-install.zip"
+frontend_only = "--frontend-only" in sys.argv[1:]
+arguments = [argument for argument in sys.argv[1:] if argument != "--frontend-only"]
+if len(arguments) > 1 or any(argument.startswith("--") for argument in arguments):
+    raise SystemExit("Usage: package_release.py [output.zip] [--frontend-only]")
+out = Path(arguments[0]).expanduser().resolve() if arguments else site.parent / ("hamed-resume-site-frontend.zip" if frontend_only else "hamed-resume-site-install.zip")
 if not dist.is_dir():
     raise SystemExit("Build dist first with npm run build")
 if out.exists():
     raise SystemExit(f"Refusing to overwrite existing release: {out}")
 
 required = [
-    site / ".htaccess", site / "install.php", site / "README.md", site / "SECURITY_REVIEW.md", site / "LICENSE", site / "NOTICE",
+    site / ".htaccess", site / "install.php", site / "README.md", site / "SECURITY_REVIEW.md", site / "MOTION.md", site / "LICENSE", site / "NOTICE",
     site / "admin" / ".htaccess", site / "admin" / "index.php",
     site / "admin" / "api.php", site / "admin" / "bootstrap.php",
     site / "admin" / "admin.css", site / "admin" / "admin.js",
     site / "api" / ".htaccess", site / "api" / "public-settings.php",
     site / "dl" / ".htaccess",
 ]
+if frontend_only:
+    required = [site / "MOTION.md", site / "LICENSE", site / "NOTICE"]
 missing = [str(p) for p in required if not p.is_file()]
 if missing:
     raise SystemExit("Missing release files: " + ", ".join(missing))
@@ -74,12 +80,14 @@ with ZipFile(out, "x", ZIP_DEFLATED, compresslevel=8) as zf:
 
 with ZipFile(out) as zf:
     names = set(zf.namelist())
-    needed = {"index.html", "README.md", "SECURITY_REVIEW.md", "LICENSE", "NOTICE", ".htaccess", "install.php", "admin/.htaccess", "api/.htaccess", "dl/.htaccess", "admin/index.php", "admin/api.php", "admin/bootstrap.php", "api/public-settings.php"}
+    needed = {"index.html", "MOTION.md", "LICENSE", "NOTICE"} if frontend_only else {"index.html", "README.md", "SECURITY_REVIEW.md", "MOTION.md", "LICENSE", "NOTICE", ".htaccess", "install.php", "admin/.htaccess", "api/.htaccess", "dl/.htaccess", "admin/index.php", "admin/api.php", "admin/bootstrap.php", "api/public-settings.php"}
     if not needed.issubset(names):
         raise SystemExit("Release is missing required files: " + ", ".join(sorted(needed - names)))
     forbidden = [n for n in names if n.endswith(("config.php", ".json", ".lock")) or n.lower().endswith(".pdf") or "node_modules/" in n or n.startswith(("src/", "admin/storage/"))]
     if forbidden:
         raise SystemExit("Unexpected sensitive/runtime files: " + ", ".join(sorted(forbidden)))
+    if frontend_only and any(name not in build_names | needed for name in names):
+        raise SystemExit("Frontend update contains a file outside its whitelist")
     bad = zf.testzip()
     if bad:
         raise SystemExit("Archive CRC failed: " + bad)
