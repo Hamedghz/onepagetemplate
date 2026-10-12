@@ -1,0 +1,25 @@
+Options -Indexes
+DirectoryIndex index.html index.php
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+<FilesMatch "(?i)^(?:configs?\.php|(?:package(?:-lock)?|components)\.json|vite\.config\.js|site\.config\.js|.*\.(?:log|sql|bak|old|orig|zip|rar|7z|map|md))$">
+    Require all denied
+</FilesMatch>
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(?:src|scripts|node_modules|dist|\.git|\.codex)(?:/|$) - [F,L]
+    RewriteRule ^api\.php$ - [F,L]
+</IfModule>
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+</IfModule>
+<Files "install.php">
+    <IfModule mod_headers.c>
+        Header set Cache-Control "no-store"
+    </IfModule>
+</Files>
