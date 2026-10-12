@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, useTransform } from "motion/react";
 import { copy, defaultContact } from "../copy.js";
 import { safePublicData } from "../publicData.js";
+import { useContinuousScenes, useLiveReducedMotion } from "../useContinuousScenes.js";
 
 const sceneIds = ["profile", "projects", "experience", "expertise", "qualification", "education", "downloads"];
 const SCENE_COUNT = sceneIds.length;
@@ -56,7 +57,6 @@ function AbstractNetwork() {
 
 function App() {
   const [language, setLanguage] = useState("fa");
-  const [activeScene, setActiveScene] = useState(0);
   const [contact, setContact] = useState(defaultContact);
   const [downloads, setDownloads] = useState([]);
   const [downloadPage, setDownloadPage] = useState(0);
@@ -65,35 +65,25 @@ function App() {
   const [announcement, setAnnouncement] = useState("");
   const stageRef = useRef(null);
   const sceneRefs = useRef([]);
-  const activeSceneRef = useRef(0);
-  const hoverRef = useRef(false);
-  const focusRef = useRef(false);
-  const userPaused = useRef(false);
-  const interactionPaused = useRef(false);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useLiveReducedMotion();
+  const { activeScene, progress, goTo, pauseInteraction } = useContinuousScenes({ stageRef, sceneRefs, count: SCENE_COUNT, desktop, reducedMotion, paused });
+  const journeyProgress = useTransform(progress, [0, SCENE_COUNT - 1], [0, 1]);
   const t = copy[language];
   const downloadPageCount = Math.max(1, Math.ceil(downloads.length / 4));
   const visibleDownloads = desktop ? downloads.slice(downloadPage * 4, downloadPage * 4 + 4) : downloads;
 
-  const setScene = useCallback((index, announce = true) => {
+  const go = useCallback((index) => {
     const bounded = Math.max(0, Math.min(index, SCENE_COUNT - 1));
-    activeSceneRef.current = bounded;
-    setActiveScene(bounded);
-    if (announce) {
-      const current = formatNumber(bounded + 1, language);
-      const total = formatNumber(SCENE_COUNT, language);
-      setAnnouncement(copy[language].footer.count.replace("{current}", current).replace("{total}", total));
-    }
-    const node = sceneRefs.current[bounded];
-    if (node) node.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "nearest", inline: "start" });
-  }, [language, reducedMotion]);
+    const current = formatNumber(bounded + 1, language);
+    const total = formatNumber(SCENE_COUNT, language);
+    setAnnouncement(copy[language].footer.count.replace("{current}", current).replace("{total}", total));
+    goTo(bounded);
+  }, [language, goTo]);
 
   useEffect(() => {
     const onResize = () => setDesktop(window.matchMedia("(min-width: 960px) and (orientation: landscape)").matches);
     window.addEventListener("resize", onResize);
-    const onVisibility = () => { if (document.visibilityState !== "visible") hoverRef.current = true; };
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => { window.removeEventListener("resize", onResize); document.removeEventListener("visibilitychange", onVisibility); };
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {
@@ -112,51 +102,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const stage = stageRef.current;
-    if (!stage) return undefined;
-    const onWheel = (event) => {
-      if (!desktop || Math.max(Math.abs(event.deltaY), Math.abs(event.deltaX)) < 12) return;
-      if (event.target.closest("a,button,input,textarea,select")) return;
-      event.preventDefault();
-      const forward = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY > 0 : event.deltaX > 0;
-      if (forward) setScene(activeSceneRef.current + 1);
-      else setScene(activeSceneRef.current - 1);
-    };
-    stage.addEventListener("wheel", onWheel, { passive: false });
-    return () => { stage.removeEventListener("wheel", onWheel); };
-  }, [desktop, setScene]);
-
-  useEffect(() => {
-    if (!desktop) return undefined;
-    const onKeyDown = (event) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.target.closest("input,textarea,select,[contenteditable='true']")) return;
-      if (event.key === "ArrowRight") { event.preventDefault(); setScene(activeSceneRef.current + 1); }
-      if (event.key === "ArrowLeft") { event.preventDefault(); setScene(activeSceneRef.current - 1); }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [desktop, setScene]);
-
-  useEffect(() => {
-    if (!desktop || paused || reducedMotion || hoverRef.current || focusRef.current || document.visibilityState !== "visible") return undefined;
-    const timer = window.setInterval(() => {
-      if (interactionPaused.current || document.visibilityState !== "visible") return;
-      setScene((activeSceneRef.current + 1) % SCENE_COUNT, false);
-    }, 19000);
-    return () => window.clearInterval(timer);
-  }, [activeScene, desktop, paused, reducedMotion, setScene]);
-
-  useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = language === "fa" ? "rtl" : "ltr";
   }, [language]);
-
-  const go = useCallback((index) => setScene(index, true), [setScene]);
-  const setFocusPause = (value) => { focusRef.current = value; interactionPaused.current = value || hoverRef.current; };
-  const slideMotion = useMemo(() => ({
-    hidden: (forward) => ({ opacity: 0, x: forward ? -18 : 18 }),
-    shown: { opacity: 1, x: 0, transition: { duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] } },
-  }), [reducedMotion]);
 
   const slides = [
     <section className="scene scene-profile" id="profile" aria-labelledby="title-profile">
@@ -251,22 +199,11 @@ function App() {
     </section>,
   ];
 
-  useEffect(() => {
-    if (!desktop) return undefined;
-    const node = sceneRefs.current[activeScene];
-    if (!node) return undefined;
-    const visible = node.getBoundingClientRect();
-    const stage = stageRef.current?.getBoundingClientRect();
-    if (!stage || visible.left >= stage.left && visible.right <= stage.right) return undefined;
-    node.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "nearest", inline: "start" });
-    return undefined;
-  }, [activeScene, desktop, reducedMotion]);
-
   const changeLanguage = () => setLanguage((value) => value === "fa" ? "en" : "fa");
   const step = (delta) => go(activeScene + delta);
 
   return (
-    <div className="site-shell" data-language={language} dir={language === "fa" ? "rtl" : "ltr"} onMouseEnter={() => { hoverRef.current = true; interactionPaused.current = true; }} onMouseLeave={() => { hoverRef.current = false; interactionPaused.current = focusRef.current; }} onFocusCapture={() => setFocusPause(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocusPause(false); }}>
+    <div className="site-shell" data-language={language} dir={language === "fa" ? "rtl" : "ltr"} onMouseEnter={() => pauseInteraction("hover", true)} onMouseLeave={() => pauseInteraction("hover", false)} onFocusCapture={() => pauseInteraction("focus", true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) pauseInteraction("focus", false); }}>
       <a className="skip-link" href="#scene-stage">{t.controls.skip}</a>
       <header className="site-header">
         <a className="wordmark" href="#profile" onClick={(event) => { event.preventDefault(); go(0); }} aria-label={t.brand}>
@@ -275,19 +212,18 @@ function App() {
         <nav className="scene-nav" aria-label={language === "fa" ? "بخش‌های رزومه" : "Résumé sections"}>
           {t.nav.map((label, index) => <button key={sceneIds[index]} className={activeScene === index ? "scene-link active" : "scene-link"} type="button" aria-current={activeScene === index ? "step" : undefined} onClick={() => go(index)}><span>{formatNumber(index + 1, language)}</span>{label}</button>)}
         </nav>
-        <div className="header-actions"><button className="language-button" type="button" onClick={changeLanguage} aria-label={t.controls.language}>{language === "fa" ? "EN" : "فا"}</button><button className="motion-button" type="button" onClick={() => { userPaused.current = !userPaused.current; setPaused(userPaused.current); }} aria-pressed={paused || reducedMotion}>{paused || reducedMotion ? t.controls.play : t.controls.pause}</button></div>
+        <div className="header-actions"><button className="language-button" type="button" onClick={changeLanguage} aria-label={t.controls.language}>{language === "fa" ? "EN" : "فا"}</button><button className="motion-button" type="button" onClick={() => setPaused((value) => !value)} disabled={reducedMotion} aria-pressed={paused || reducedMotion}>{reducedMotion ? t.controls.reduced : paused ? t.controls.play : t.controls.pause}</button></div>
       </header>
 
-      <main className={desktop ? "scene-stage desktop-stage" : "scene-stage"} id="scene-stage" ref={stageRef} aria-label={language === "fa" ? "رزومهٔ حامد قاسم‌زاده" : "Hamed Ghasemzadeh résumé"}>
-        {slides.map((slide, index) => <div className={activeScene === index ? "scene-frame active" : "scene-frame"} key={sceneIds[index]} ref={(node) => { sceneRefs.current[index] = node; }} aria-hidden={desktop && activeScene !== index ? "true" : undefined} inert={desktop && activeScene !== index ? true : undefined}>
-          {desktop ? <AnimatePresence mode="wait" custom={index >= activeScene}>
-            {activeScene === index && <motion.div className="scene-motion" dir={language === "fa" ? "rtl" : "ltr"} key={`${sceneIds[index]}-${language}`} custom={index >= activeScene} variants={slideMotion} initial="hidden" animate="shown" exit="hidden">{slide}</motion.div>}
-          </AnimatePresence> : <div className="scene-motion" dir={language === "fa" ? "rtl" : "ltr"}>{slide}</div>}
+      <main className={desktop ? "scene-stage desktop-stage" : "scene-stage"} id="scene-stage" ref={stageRef} tabIndex={-1} aria-label={language === "fa" ? "رزومهٔ حامد قاسم‌زاده" : "Hamed Ghasemzadeh résumé"}>
+        {slides.map((slide, index) => <div className={activeScene === index ? "scene-frame active" : "scene-frame"} key={sceneIds[index]} ref={(node) => { sceneRefs.current[index] = node; }}>
+          <div className="scene-motion" dir={language === "fa" ? "rtl" : "ltr"}>{slide}</div>
         </div>)}
       </main>
 
       <footer className="site-footer">
-        <div className="footer-controls"><button type="button" onClick={() => step(-1)} disabled={activeScene === 0} aria-label={t.controls.previous}>←</button><span>{formatNumber(activeScene + 1, language)} / {formatNumber(SCENE_COUNT, language)}</span><button type="button" onClick={() => step(1)} disabled={activeScene === SCENE_COUNT - 1} aria-label={t.controls.next}>→</button></div>
+        <div className="journey-rail" aria-hidden="true"><motion.span style={{ scaleX: journeyProgress }} /></div>
+        <div className="footer-controls"><button type="button" onClick={() => step(-1)} disabled={activeScene === 0} aria-label={t.controls.previous}>→</button><span>{formatNumber(activeScene + 1, language)} / {formatNumber(SCENE_COUNT, language)}</span><button type="button" onClick={() => step(1)} disabled={activeScene === SCENE_COUNT - 1} aria-label={t.controls.next}>←</button></div>
         <p>{t.footer.hint}</p>
       </footer>
       <p className="sr-only" aria-live="polite" aria-atomic="true">{announcement}</p>

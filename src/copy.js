@@ -88,8 +88,8 @@ export const copy = {
       instagramLabel: "مشاهدهٔ صفحه در اینستاگرام",
       admin: "ورود مدیر",
     },
-    controls: { previous: "بخش قبلی", next: "بخش بعدی", pause: "توقف حرکت", play: "ادامهٔ حرکت", language: "Switch to English", skip: "رفتن به محتوای اصلی" },
-    footer: { hint: "برای جابه‌جایی، چرخ موس یا کلیدهای جهت‌نما را به‌کار ببرید.", count: "{current} از {total}" },
+    controls: { previous: "بخش قبلی", next: "بخش بعدی", pause: "توقف حرکت", play: "ادامهٔ حرکت", reduced: "حرکت کاهش‌یافته", language: "Switch to English", skip: "رفتن به محتوای اصلی" },
+    footer: { hint: "چرخ موس، کشیدن صفحه یا کلیدهای جهت‌نما؛ حرکت پیوسته بین بخش‌ها.", count: "{current} از {total}" },
   },
   en: {
     brand: "Hamed Ghasemzadeh",
@@ -180,8 +180,8 @@ export const copy = {
       instagramLabel: "Visit my Instagram profile",
       admin: "Admin login",
     },
-    controls: { previous: "Previous section", next: "Next section", pause: "Pause motion", play: "Resume motion", language: "تغییر زبان به فارسی", skip: "Skip to main content" },
-    footer: { hint: "Use the wheel or arrow keys to move between sections.", count: "{current} of {total}" },
+    controls: { previous: "Previous section", next: "Next section", pause: "Pause motion", play: "Resume motion", reduced: "Reduced motion", language: "تغییر زبان به فارسی", skip: "Skip to main content" },
+    footer: { hint: "Wheel, drag or arrow keys to move continuously between sections.", count: "{current} of {total}" },
   },
 };
 
