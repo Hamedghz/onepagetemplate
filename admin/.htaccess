@@ -1,0 +1,4 @@
+Options -Indexes
+<FilesMatch "^(config\.php|config\.example\.php|install-config\.php|bootstrap\.php|installed\.lock|setup\.guard|upload\.lock|\.cfg-.*)$">
+    Require all denied
+</FilesMatch>
